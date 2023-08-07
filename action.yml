@@ -1,5 +1,5 @@
-name: 'markdown-translation action'
-description: 'extracts xliff and skeleton from markdown and compose markdown from them'
+name: 'markdown-translation'
+description: 'extract xliff and skeleton from markdown and compose markdown from them'
 author: 'moki'
 inputs:
   allowed-associations:
