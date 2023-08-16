@@ -151,6 +151,9 @@ class Action {
     }
     handlePullRequest() {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!this.parameters.postUsage) {
+                return;
+            }
             const { repo, payload: { pull_request }, } = this.context;
             if (!(repo && pull_request)) {
                 return;
