@@ -146,15 +146,21 @@ pull_request(types:[opened])`;
         await this.gitClient.push();
     }
 
-    private async usageHandler(): Promise<void> {
+    private async usageHandler(parameters: HandlerParameters): Promise<void> {
         core.debug('handling usage command');
-        await this.postComment(Action.usage);
+
+        const {pr, repo} = parameters;
+        const parsedRepo = JSON.parse(repo);
+        const parsedPR = parseInt(pr, 10);
+
+        await this.postComment(parsedPR, parsedRepo, Action.usage);
     }
 
     private async handleComment(): Promise<void> {
         core.debug('handling issue_comment');
 
         const {
+            repo,
             payload: {issue, comment},
         } = this.context;
 
@@ -169,18 +175,16 @@ pull_request(types:[opened])`;
 
         const commands = await this.commandsParser.parse(comment.body);
         core.debug(`parsed commands from comment: ${JSON.stringify(commands)}`);
+
+        const prStr = issue.number.toString();
+        const repoStr = JSON.stringify(repo);
+
         await this.commandsExecutor.execute(
-            commands.map(this.addPR(issue.number.toString()))
+            commands.map(this.addContext(prStr, repoStr))
         );
     }
 
     private async handlePullRequest(): Promise<void> {
-        if (this.parameters.postUsage) {
-            await this.postComment(Action.usage);
-        }
-    }
-
-    private async postComment(body: string): Promise<void> {
         const {
             repo,
             payload: {pull_request},
@@ -190,19 +194,28 @@ pull_request(types:[opened])`;
             return;
         }
 
+        await this.postComment(pull_request.number, repo, Action.usage);
+    }
+
+    private async postComment(
+        issue_number: number,
+        repo: {owner: string; repo: string},
+        body: string
+    ): Promise<void> {
         await this.octokit.rest.issues.createComment({
             ...repo,
-            issue_number: pull_request.number,
+            issue_number,
             body,
         });
     }
 
-    private addPR(pr: string) {
+    private addContext(pr: string, repo: string) {
         return (
             command: Command<HandlerParameters>
         ): Command<HandlerParameters> => {
             command.parameters = {
                 pr,
+                repo,
                 ...command.parameters,
             };
             return command;

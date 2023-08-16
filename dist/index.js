@@ -124,16 +124,19 @@ class Action {
             yield this.gitClient.push();
         });
     }
-    usageHandler() {
+    usageHandler(parameters) {
         return __awaiter(this, void 0, void 0, function* () {
             core.debug('handling usage command');
-            yield this.postComment(Action.usage);
+            const { pr, repo } = parameters;
+            const parsedRepo = JSON.parse(repo);
+            const parsedPR = parseInt(pr, 10);
+            yield this.postComment(parsedPR, parsedRepo, Action.usage);
         });
     }
     handleComment() {
         return __awaiter(this, void 0, void 0, function* () {
             core.debug('handling issue_comment');
-            const { payload: { issue, comment }, } = this.context;
+            const { repo, payload: { issue, comment }, } = this.context;
             if (!((issue === null || issue === void 0 ? void 0 : issue.pull_request) && comment)) {
                 core.debug(`skip ${Action.issue_comment_event} event inside issues`);
                 return;
@@ -141,28 +144,30 @@ class Action {
             this.assertPermissions();
             const commands = yield this.commandsParser.parse(comment.body);
             core.debug(`parsed commands from comment: ${JSON.stringify(commands)}`);
-            yield this.commandsExecutor.execute(commands.map(this.addPR(issue.number.toString())));
+            const prStr = issue.number.toString();
+            const repoStr = JSON.stringify(repo);
+            yield this.commandsExecutor.execute(commands.map(this.addContext(prStr, repoStr)));
         });
     }
     handlePullRequest() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.parameters.postUsage) {
-                yield this.postComment(Action.usage);
-            }
-        });
-    }
-    postComment(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { repo, payload: { pull_request }, } = this.context;
             if (!(repo && pull_request)) {
                 return;
             }
-            yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: pull_request.number, body }));
+            yield this.postComment(pull_request.number, repo, Action.usage);
         });
     }
-    addPR(pr) {
+    postComment(issue_number, repo, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number,
+                body }));
+        });
+    }
+    addContext(pr, repo) {
         return (command) => {
-            command.parameters = Object.assign({ pr }, command.parameters);
+            command.parameters = Object.assign({ pr,
+                repo }, command.parameters);
             return command;
         };
     }
