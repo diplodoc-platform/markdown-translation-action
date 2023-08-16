@@ -96,7 +96,7 @@ pull_request(types:[opened])`;
 
         const associations = this.parseAssociations(associationsString);
 
-        const postUsage = Boolean(core.getInput('post-usage')) ?? false;
+        const postUsage = core.getInput('post-usage') === 'true';
 
         return {githubToken, associations, postUsage};
     }
