@@ -60,6 +60,7 @@ class Action {
         this.commandsExecutor = new command_1.CommandExecutor();
         this.commandsExecutor.addHandler('extract', this.extractHandler.bind(this));
         this.commandsExecutor.addHandler('compose', this.composeHandler.bind(this));
+        this.commandsExecutor.addHandler('usage', this.usageHandler.bind(this));
         this.commandsParser = new command_1.CommandParser();
     }
     run() {
@@ -76,13 +77,15 @@ class Action {
         });
     }
     parseActionParameters() {
+        var _a;
         const githubToken = core.getInput('github-token', { required: true });
         let associationsString = core.getInput('allowed-associations');
         if (!(associationsString === null || associationsString === void 0 ? void 0 : associationsString.length)) {
             associationsString = Action.defaultAssociationsString;
         }
         const associations = this.parseAssociations(associationsString);
-        return { githubToken, associations };
+        const postUsage = (_a = Boolean(core.getInput('post-usage'))) !== null && _a !== void 0 ? _a : false;
+        return { githubToken, associations, postUsage };
     }
     parseAssociations(associations) {
         const parser = (str, ctx) => {
@@ -120,13 +123,20 @@ class Action {
             yield this.gitClient.push();
         });
     }
-    handlePullRequest() {
+    usageHandler() {
         return __awaiter(this, void 0, void 0, function* () {
             const { repo, payload: { pull_request }, } = this.context;
             if (!(repo && pull_request)) {
                 return;
             }
             yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: pull_request.number, body: Action.usage }));
+        });
+    }
+    handlePullRequest() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.parameters.postUsage) {
+                yield this.usageHandler();
+            }
         });
     }
     handleComment() {
@@ -211,7 +221,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Command = exports.CommandParser = exports.CommandExecutor = void 0;
 const zod_1 = __nccwpck_require__(3301);
 const cinameSchema = zod_1.z.literal('markdown-translation');
-const commandsSchema = zod_1.z.union([zod_1.z.literal('extract'), zod_1.z.literal('compose')]);
+const commandsSchema = zod_1.z.union([
+    zod_1.z.literal('extract'),
+    zod_1.z.literal('compose'),
+    zod_1.z.literal('usage'),
+]);
 const parametersSchema = zod_1.z.array(zod_1.z.string());
 class Command {
     constructor(name, parameters = {}) {
