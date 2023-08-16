@@ -40,7 +40,7 @@ class CommandParser {
 
     private parseCommand(line: string): Command<{[key: string]: string}> {
         const tokens = line.split(' ').filter(Boolean);
-        if (tokens.length < 4) {
+        if (tokens.length < 2) {
             throw new Error('invalid command string');
         }
 
@@ -48,10 +48,15 @@ class CommandParser {
         const keyword = cinameSchema.parse(tokens[0]);
         const cmd = commandsSchema.parse(tokens[1]);
 
-        const parameters = {
-            input: tokens[2],
-            output: tokens[3],
-        };
+        let parameters = {};
+
+        if (cmd === 'extract' || cmd === 'compose') {
+            if (tokens.length < 4) {
+                throw new Error('invalid command string');
+            }
+
+            parameters = {input: tokens[2], output: tokens[3]};
+        }
 
         const command = new Command(cmd, parameters);
 
