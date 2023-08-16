@@ -185,6 +185,10 @@ pull_request(types:[opened])`;
     }
 
     private async handlePullRequest(): Promise<void> {
+        if (!this.parameters.postUsage) {
+            return;
+        }
+
         const {
             repo,
             payload: {pull_request},
