@@ -121,6 +121,7 @@ pull_request(types:[opened])`;
     }
 
     private async extractHandler(parameters: HandlerParameters): Promise<void> {
+        core.debug('handling extract command');
         const {pr, input, output, sll, tll} = parameters;
 
         await this.githubClient.checkoutPR(pr);
@@ -133,6 +134,7 @@ pull_request(types:[opened])`;
     }
 
     private async composeHandler(parameters: HandlerParameters): Promise<void> {
+        core.debug('handling compose command');
         const {pr, input, output} = parameters;
 
         await this.githubClient.checkoutPR(pr);
@@ -145,26 +147,8 @@ pull_request(types:[opened])`;
     }
 
     private async usageHandler(): Promise<void> {
-        const {
-            repo,
-            payload: {pull_request},
-        } = this.context;
-
-        if (!(repo && pull_request)) {
-            return;
-        }
-
-        await this.octokit.rest.issues.createComment({
-            ...repo,
-            issue_number: pull_request.number,
-            body: Action.usage,
-        });
-    }
-
-    private async handlePullRequest(): Promise<void> {
-        if (this.parameters.postUsage) {
-            await this.usageHandler();
-        }
+        core.debug('handling usage command');
+        await this.postComment(Action.usage);
     }
 
     private async handleComment(): Promise<void> {
@@ -184,9 +168,33 @@ pull_request(types:[opened])`;
         this.assertPermissions();
 
         const commands = await this.commandsParser.parse(comment.body);
+        core.debug(`parsed commands from comment: ${JSON.stringify(commands)}`);
         await this.commandsExecutor.execute(
             commands.map(this.addPR(issue.number.toString()))
         );
+    }
+
+    private async handlePullRequest(): Promise<void> {
+        if (this.parameters.postUsage) {
+            await this.postComment(Action.usage);
+        }
+    }
+
+    private async postComment(body: string): Promise<void> {
+        const {
+            repo,
+            payload: {pull_request},
+        } = this.context;
+
+        if (!(repo && pull_request)) {
+            return;
+        }
+
+        await this.octokit.rest.issues.createComment({
+            ...repo,
+            issue_number: pull_request.number,
+            body,
+        });
     }
 
     private addPR(pr: string) {
@@ -204,11 +212,13 @@ pull_request(types:[opened])`;
     private async assertPermissions(): Promise<void> {
         const permission = await this.actorPermission();
         if (!Action.allowedPermissions.has(permission)) {
+            core.debug(`actor permission: ${permission}`);
             throw new Error('insufficient actor permissions');
         }
 
         const association = await this.commentAuthorAssociation();
         if (!this.allowedAssociations.has(association)) {
+            core.debug(`actor association: ${association}`);
             throw new Error('insufficient actor association');
         }
     }

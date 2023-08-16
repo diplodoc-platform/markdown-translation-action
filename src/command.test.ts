@@ -120,6 +120,10 @@ describe('executor', () => {
             return 'rv';
         });
 
+        executor.addHandler('usage', async (parameters): Promise<string> => {
+            return '';
+        });
+
         const extractParameters = {
             input: 'input-folder',
             output: 'output-folder',
@@ -128,13 +132,15 @@ describe('executor', () => {
         const commands = [
             new Command('extract', extractParameters),
             new Command('compose', {}),
+            new Command('usage', {}),
         ];
 
         const results = await executor.execute(commands);
 
         expect(Array.isArray(results)).toBeTruthy();
-        expect(results.length).toStrictEqual(2);
+        expect(results.length).toStrictEqual(3);
         expect(results[0]).toStrictEqual(extractParameters);
         expect(results[1]).toStrictEqual('rv');
+        expect(results[2]).toStrictEqual('');
     });
 });

@@ -104,6 +104,7 @@ class Action {
     }
     extractHandler(parameters) {
         return __awaiter(this, void 0, void 0, function* () {
+            core.debug('handling extract command');
             const { pr, input, output, sll, tll } = parameters;
             yield this.githubClient.checkoutPR(pr);
             yield this.xliffClient.extract(input, output, sll, tll);
@@ -114,6 +115,7 @@ class Action {
     }
     composeHandler(parameters) {
         return __awaiter(this, void 0, void 0, function* () {
+            core.debug('handling compose command');
             const { pr, input, output } = parameters;
             yield this.githubClient.checkoutPR(pr);
             yield this.xliffClient.compose(input, output);
@@ -124,18 +126,8 @@ class Action {
     }
     usageHandler() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { repo, payload: { pull_request }, } = this.context;
-            if (!(repo && pull_request)) {
-                return;
-            }
-            yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: pull_request.number, body: Action.usage }));
-        });
-    }
-    handlePullRequest() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.parameters.postUsage) {
-                yield this.usageHandler();
-            }
+            core.debug('handling usage command');
+            yield this.postComment(Action.usage);
         });
     }
     handleComment() {
@@ -148,7 +140,24 @@ class Action {
             }
             this.assertPermissions();
             const commands = yield this.commandsParser.parse(comment.body);
+            core.debug(`parsed commands from comment: ${JSON.stringify(commands)}`);
             yield this.commandsExecutor.execute(commands.map(this.addPR(issue.number.toString())));
+        });
+    }
+    handlePullRequest() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.parameters.postUsage) {
+                yield this.postComment(Action.usage);
+            }
+        });
+    }
+    postComment(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { repo, payload: { pull_request }, } = this.context;
+            if (!(repo && pull_request)) {
+                return;
+            }
+            yield this.octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: pull_request.number, body }));
         });
     }
     addPR(pr) {
@@ -161,10 +170,12 @@ class Action {
         return __awaiter(this, void 0, void 0, function* () {
             const permission = yield this.actorPermission();
             if (!Action.allowedPermissions.has(permission)) {
+                core.debug(`actor permission: ${permission}`);
                 throw new Error('insufficient actor permissions');
             }
             const association = yield this.commentAuthorAssociation();
             if (!this.allowedAssociations.has(association)) {
+                core.debug(`actor association: ${association}`);
                 throw new Error('insufficient actor association');
             }
         });
