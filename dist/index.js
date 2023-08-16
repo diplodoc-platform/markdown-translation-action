@@ -77,14 +77,13 @@ class Action {
         });
     }
     parseActionParameters() {
-        var _a;
         const githubToken = core.getInput('github-token', { required: true });
         let associationsString = core.getInput('allowed-associations');
         if (!(associationsString === null || associationsString === void 0 ? void 0 : associationsString.length)) {
             associationsString = Action.defaultAssociationsString;
         }
         const associations = this.parseAssociations(associationsString);
-        const postUsage = (_a = Boolean(core.getInput('post-usage'))) !== null && _a !== void 0 ? _a : false;
+        const postUsage = core.getInput('post-usage') === 'true';
         return { githubToken, associations, postUsage };
     }
     parseAssociations(associations) {
