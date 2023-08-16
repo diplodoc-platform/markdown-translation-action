@@ -8,6 +8,9 @@ inputs:
   github-token:
     description: github token
     required: true
+  post-usage:
+    description: 'if usage information should be posted upod pull_request creation, specify "true" or "false"'
+    default: 'false'
 runs:
   using: 'node16'
   main: 'dist/index.js'

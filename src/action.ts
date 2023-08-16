@@ -15,6 +15,7 @@ import {XLIFFClient} from './xliff-client';
 export type ActionParameters = {
     githubToken: string;
     associations: string[];
+    postUsage: boolean;
 };
 
 export type HandlerParameters = Record<string, string>;
@@ -64,6 +65,7 @@ pull_request(types:[opened])`;
             'compose',
             this.composeHandler.bind(this)
         );
+        this.commandsExecutor.addHandler('usage', this.usageHandler.bind(this));
 
         this.commandsParser = new CommandParser();
     }
@@ -94,7 +96,9 @@ pull_request(types:[opened])`;
 
         const associations = this.parseAssociations(associationsString);
 
-        return {githubToken, associations};
+        const postUsage = Boolean(core.getInput('post-usage')) ?? false;
+
+        return {githubToken, associations, postUsage};
     }
 
     private parseAssociations(associations: string): string[] {
@@ -140,7 +144,7 @@ pull_request(types:[opened])`;
         await this.gitClient.push();
     }
 
-    private async handlePullRequest(): Promise<void> {
+    private async usageHandler(): Promise<void> {
         const {
             repo,
             payload: {pull_request},
@@ -155,6 +159,12 @@ pull_request(types:[opened])`;
             issue_number: pull_request.number,
             body: Action.usage,
         });
+    }
+
+    private async handlePullRequest(): Promise<void> {
+        if (this.parameters.postUsage) {
+            await this.usageHandler();
+        }
     }
 
     private async handleComment(): Promise<void> {
