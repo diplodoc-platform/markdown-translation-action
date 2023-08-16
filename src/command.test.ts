@@ -26,6 +26,17 @@ describe('commands parser', () => {
         expect(parsed[0]['name']).toStrictEqual('compose');
     });
 
+    it('parses usage command', async () => {
+        const comment = 'markdown-translation usage';
+
+        const parser = new CommandParser();
+
+        const parsed = await parser.parse(comment);
+
+        expect(parsed[0] instanceof Command).toBeTruthy();
+        expect(parsed[0]['name']).toStrictEqual('usage');
+    });
+
     it('empty on invalid command', async () => {
         const comment =
             'markdown-translation unknown input_folder output_folder';
