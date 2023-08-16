@@ -1,7 +1,11 @@
 import {z} from 'zod';
 
 const cinameSchema = z.literal('markdown-translation');
-const commandsSchema = z.union([z.literal('extract'), z.literal('compose')]);
+const commandsSchema = z.union([
+    z.literal('extract'),
+    z.literal('compose'),
+    z.literal('usage'),
+]);
 const parametersSchema = z.array(z.string());
 
 export type CommandName = z.infer<typeof commandsSchema>;
