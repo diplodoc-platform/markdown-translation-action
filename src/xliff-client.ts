@@ -8,7 +8,7 @@ class XLIFFClient {
     }
 
     async configure(): Promise<void> {
-        await exec.exec('npm install @doc-tools/docs -g');
+        await exec.exec('npm install @diplodoc/cli -g');
         this.configured = true;
     }
 
