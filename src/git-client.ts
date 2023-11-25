@@ -1,3 +1,5 @@
+import * as inputHelper from '../node_modules/checkout/src/input-helper';
+import * as gitSourceProvider from '../node_modules/checkout/src/git-source-provider';
 import * as exec from '@actions/exec';
 import * as core from '@actions/core';
 import {ExecOptions} from '@actions/exec';
@@ -46,6 +48,11 @@ class GitClient {
 
         await Promise.all(tasks);
         this.configured = true;
+    }
+
+    async checkout(): Promise<void> {
+        const settings = await inputHelper.getInputs();
+        return gitSourceProvider.getSource(settings);
     }
 
     async add(pattern: string): Promise<void> {

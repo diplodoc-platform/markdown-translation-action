@@ -9,10 +9,10 @@ inputs:
     description: github token
     required: true
   post-usage:
-    description: 'if usage information should be posted upod pull_request creation, specify "true" or "false"'
+    description: 'if usage information should be posted upon pull_request creation, specify "true" or "false"'
     default: 'false'
 runs:
-  using: 'node16'
+  using: 'node18'
   main: 'dist/index.js'
 branding:
   icon: file-text

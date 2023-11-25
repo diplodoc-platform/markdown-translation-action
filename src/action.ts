@@ -124,6 +124,7 @@ pull_request(types:[opened])`;
         core.debug('handling extract command');
         const {pr, input, output, sll, tll} = parameters;
 
+        await this.gitClient.checkout();
         await this.githubClient.checkoutPR(pr);
         await this.xliffClient.extract(input, output, sll, tll);
         await this.gitClient.add('.');
@@ -137,6 +138,7 @@ pull_request(types:[opened])`;
         core.debug('handling compose command');
         const {pr, input, output} = parameters;
 
+        await this.gitClient.checkout();
         await this.githubClient.checkoutPR(pr);
         await this.xliffClient.compose(input, output);
         await this.gitClient.add('.');
