@@ -674,7 +674,7 @@ class XLIFFClient {
     }
     configure() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield exec.exec('npm install @doc-tools/docs -g');
+            yield exec.exec('npm install @diplodoc/cli -g');
             this.configured = true;
         });
     }
