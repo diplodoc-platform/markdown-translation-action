@@ -12,7 +12,7 @@ inputs:
     description: 'if usage information should be posted upon pull_request creation, specify "true" or "false"'
     default: 'false'
 runs:
-  using: 'node18'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: file-text
