@@ -2,18 +2,63 @@ name: 'markdown-translation'
 description: 'extract xliff and skeleton from markdown and compose markdown from them'
 author: 'moki'
 inputs:
-  allowed-associations:
-    description: Array of allowed associations for actors
-    default: '["OWNER"]'
-  github-token:
-    description: github token
+  pr:
+    description: pull request to checkout
     required: true
-  post-usage:
-    description: 'if usage information should be posted upon pull_request creation, specify "true" or "false"'
-    default: 'false'
+  command:
+    description: 'xliff command to run, acceptable values: extract or compose'
+    required: true
+  input:
+    description: input folder
+    required: true
+  output:
+    description: output folder
+    required: true
+  sll:
+    description: 'source language locale, example: ru-RU'
+    required: true
+  tll:
+    description: 'target language locale, example: en-US'
+    required: true
+  extract_mesage:
+    description: git message to commit extract results
+  compose_mesage:
+    description: git message to commit compose results
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    - run: npm i @diplodoc/cli -g
+      shell: bash
+    - run: gh pr checkout ${{inputs.pr}}
+      shell: bash
+    - run: echo ${{inputs.parameter}}
+      shell: bash
+    - run: yfm xliff extract --sll ${{inputs.sll}} --tll ${{inputs.tll}} --input ${{inputs.input}} --output ${{inputs.output}}
+      shell: bash
+      if: ${{inputs.command == 'extract'}}
+    - run: yfm xliff compose --sll ${{inputs.sll}} --tll ${{inputs.tll}} --input ${{inputs.input}} --output ${{inputs.output}}
+      shell: bash
+      if: ${{inputs.command == 'compose'}}
+    - run: |
+        git config --global user.name ${{inputs.git_name}}
+        git config --global user.email ${{inputs.git_email}}
+        git add .
+        git commit -m ${{inputs.extract_message}}
+      shell: bash
+      if: ${{inputs.command == 'extract'}}
+    - run: |
+        git config --global user.name ${{inputs.git_name}}
+        git config --global user.email ${{inputs.git_email}}
+        git add .
+        git commit -m ${{inputs.compose_message}}
+      shell: bash
+      if: ${{inputs.command == 'compose'}}
+    - run: git push
+      shell: bash
 branding:
   icon: file-text
   color: gray-dark
