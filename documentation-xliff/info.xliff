@@ -9,16 +9,21 @@
     <body>
       <trans-unit id="1">
         <source>title</source>
+        <target>заголовок</target>
       </trans-unit>
       <trans-unit id="2">
         <source>list item
 content inside</source>
+        <target>элемент листа
+содержимое внутри</target>
       </trans-unit>
       <trans-unit id="3">
         <source>what's going on</source>
+        <target>что происходит</target>
       </trans-unit>
       <trans-unit id="4">
         <source><g ctype="x-link_text_part" equiv-text="[]">hey</g><g ctype="x-link_attributes_part" equiv-text="()"><x ctype="x-link_attributes_href" equiv-text="file.md" /><g ctype="x-link_attributes_title" equiv-text="&quot;&quot;">title</g></g></source>
+        <target><g ctype="x-link_text_part" equiv-text="[]">привет</g><g ctype="x-link_attributes_part" equiv-text="()"><x ctype="x-link_attributes_href" equiv-text="file.md" /><g ctype="x-link_attributes_title" equiv-text="&quot;&quot;">заголовок</g></g></target>
       </trans-unit>
     </body>
   </file>
