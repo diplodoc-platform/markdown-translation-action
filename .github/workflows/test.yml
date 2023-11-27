@@ -1,22 +1,43 @@
-name: 'build-test'
+name: 'markdown-translation-usage'
 on:
-  pull_request:
-    types: [opened]
-    brances:
-      - main
-  issue_comment:
-    types: [created, edited]
-
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: pull request to checkout
+        required: true
+      command:
+        description: 'xliff command to run, acceptable values: extract or compose'
+        required: true
+      input:
+        description: input folder
+        required: true
+      output:
+        description: output folder
+        required: true
+      sll:
+        description: 'source language locale, example: ru-RU'
+        default: 'ru-RU'
+        required: true
+      tll:
+        description: 'target language locale, example: en-US'
+        default: 'en-US'
+        required: true
+      git_name:
+        description: git username to commit with
+        default: moki
+        required: true
+      git_email:
+        description: git email to commit with
+        default: 'morozov.kirill.moki@gmail.com'
+        required: true
+      extract_message:
+        description: git message to use to commit extract results
+        default: 'markdown-translation: extract xliff'
+      compose_message:
+        description: git message to use to commit compose results
+        default: 'markdown-translation: compose xliff into translated markdown'
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          npm install
-      - run: |
-          npm run all
-  test: # make sure the action works on a clean machine without building
+  test:
     permissions:
       pull-requests: write
       contents: write
@@ -25,18 +46,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          git branch -v
-      - run: |
-          git log
       - uses: ./
-        with:
-          allowed-associations: '["OWNER", "COLLABORATOR", "MEMBER"]'
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          token: ${{secrets.GITHUB_TOKEN}}
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - run: |
-          git branch -v
-      - run: |
-          git log
+        with:
+          pr: ${{github.event.inputs.pr}}
+          command: ${{github.event.inputs.command}}
+          input: ${{github.event.inputs.input}}
+          output: ${{github.event.inputs.output}}
+          sll: ${{github.event.inputs.sll}}
+          tll: ${{github.event.inputs.tll}}
+          git_name: ${{github.event.inputs.git_name}}
+          git_email: ${{github.event.inputs.git_email}}
+          extract_message: ${{github.event.inputs.extract_message}}
+          compose_message: ${{github.event.inputs.compose_message}}
