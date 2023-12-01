@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="documentation/README.md" source-language="ru-RU" target-language="en-US" datatype="markdown">
+    <header>
+      <skeleton>
+        <external-file href="xliff/README.skl.md"></external-file>
+      </skeleton>
+    </header>
+    <body>
+      <trans-unit id="1">
+        <source>🔍 📝 🤖 markdown-translation github action</source>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>translate your markdown documentation using <g ctype="x-link_text_part" equiv-text="[]">markdown-translation</g><g ctype="x-link_attributes_part" equiv-text="()"><x ctype="x-link_attributes_href" equiv-text="https://github.com/diplodoc-platform/markdown-translation" /></g> library.</source>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>action controlled by issuing commands via comments inside pull requests.</source>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>allows you to: extract and compose xliff, read more about usage under <g ctype="x-link_text_part" equiv-text="[]">usage section</g><g ctype="x-link_attributes_part" equiv-text="()"><x ctype="x-link_attributes_href" equiv-text="#-usage" /></g></source>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>read more about it under the Usage section.</source>
+      </trans-unit>
+      <trans-unit id="6">
+        <source>🔧 installation</source>
+      </trans-unit>
+      <trans-unit id="7">
+        <source>🚧 Work In Progress 🚧</source>
+      </trans-unit>
+      <trans-unit id="8">
+        <source>⚙️ configuration</source>
+      </trans-unit>
+      <trans-unit id="9">
+        <source>action should be configured appropriately</source>
+      </trans-unit>
+      <trans-unit id="10">
+        <source>🕑 triggers</source>
+      </trans-unit>
+      <trans-unit id="11">
+        <source>action intended to be ran on opened pull requests and on new comments.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
