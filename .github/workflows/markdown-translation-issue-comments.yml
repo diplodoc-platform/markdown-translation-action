@@ -1,0 +1,69 @@
+name: 'markdown-translation-issue-comments'
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: pull request to checkout
+        required: true
+      command:
+        description: 'xliff command to run, acceptable values: extract or compose'
+        required: true
+      input:
+        description: input folder
+        required: true
+      output:
+        description: output folder
+        required: true
+      sll:
+        description: 'source language locale, example: ru-RU'
+        default: 'ru-RU'
+        required: true
+      tll:
+        description: 'target language locale, example: en-US'
+        default: 'en-US'
+        required: true
+      git_name:
+        description: git username to commit with
+        default: moki
+        required: true
+      git_email:
+        description: git email to commit with
+        default: 'morozov.kirill.moki@gmail.com'
+        required: true
+      extract_message:
+        description: git message to use to commit extract results
+        default: 'markdown-translation: extract xliff'
+      compose_message:
+        description: git message to use to commit compose results
+        default: 'markdown-translation: compose xliff into translated markdown'
+jobs:
+  test:
+    permissions:
+      pull-requests: write
+      contents: write
+      packages: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      # parameters adapter
+      - name: parse parameters
+        id: parse-parameters
+        # run: bash ${GITHUB_WORKSPACE}/scripts/parse-parameters.sh
+        shell: bash
+        run: |
+          echo "pr=${{github.event.inputs.pr}} command=${{github.event.inputs.command}} input=${{github.event.inputs.input}} output=${{github.event.inputs.output}} sll=${{github.event.inputs.sll}} tll=${{github.event.inputs.tll}} git_name=${{github.event.inputs.git_name}} git_email=${{github.event.inputs.git_email}} extract_message=${{github.event.inputs.extract_message}} compose_message=${{github.event.inputs.compose_message}}" | tr ' ' '\n' >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+      - uses: ./
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          pr: ${{steps.parse-parameters.outputs.pr}}
+          command: ${{steps.parse-parameters.outputs.command}}
+          input: ${{steps.parse-parameters.outputs.input}}
+          output: ${{steps.parse-parameters.outputs.output}}
+          sll: ${{steps.parse-parameters.outputs.sll}}
+          tll: ${{steps.parse-parameters.outputs.tll}}
+          git_name: ${{steps.parse-parameters.outputs.git_name}}
+          git_email: ${{steps.parse-parameters.outputs.git_email}}
+          extract_message: ${{steps.parse-parameters.outputs.extract_message}}
+          compose_message: ${{steps.parse-parameters.outputs.compose_message}}
