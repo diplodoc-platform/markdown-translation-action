@@ -29,6 +29,7 @@ jobs:
           echo -e "${{steps.parameters-parsing.outputs.group3}}"
           echo -e "${{steps.parameters-parsing.outputs.group4}}"
           echo -e "${{steps.parameters-parsing.outputs.group5}}"
+          echo -e "${{steps.parameters-parsing.outputs.group1 != '' && steps.parameters-parsing.outputs.group2 != '' && steps.parameters-parsing.outputs.group3 != '' && steps.parameters-parsing.outputs.group4 != '' && steps.parameters-parsing.outputs.group5 != ''}}"
         shell: bash
 #      - name:
 #      - name: parse parameters
