@@ -22,16 +22,20 @@ inputs:
     required: true
   git_name:
     description: git username to commit with
+    default: moki
     required: true
   git_email:
     description: git email to commit with
+    default: 'morozov.kirill.moki@gmail.com'
     required: true
   extract_message:
     description: git message to commit extract results
     required: true
+    default: 'markdown-translation: extract xliff'
   compose_message:
     description: git message to commit compose results
     required: true
+    default: 'markdown-translation: compose xliff into translated markdown'
 runs:
   using: composite
   steps:
