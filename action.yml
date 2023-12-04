@@ -1,76 +1,85 @@
 name: 'markdown-translation'
 description: 'extract xliff and skeleton from markdown and compose markdown from them'
-author: 'moki'
+author: 'diplodoc'
 inputs:
-  pr:
-    description: pull request to checkout
-    required: true
-  command:
-    description: 'xliff command to run, acceptable values: extract or compose'
-    required: true
-  input:
-    description: input folder
-    required: true
-  output:
-    description: output folder
-    required: true
-  sll:
-    description: 'source language locale, example: ru-RU'
-    required: true
-  tll:
-    description: 'target language locale, example: en-US'
-    required: true
+  command_space:
+    description: '<TODO>'
+    default: 'docs'
+  default_sll:
+    description: 'Default source language locale, example: ru-RU'
+    default: ''
+  default_tll:
+    description: 'Default target language locale, example: en-US'
+    default: ''
   git_name:
-    description: git username to commit with
-    default: moki
+    description: 'Git username to commit with'
     required: true
   git_email:
-    description: git email to commit with
-    default: 'morozov.kirill.moki@gmail.com'
+    description: 'Git email to commit with'
     required: true
-  extract_message:
-    description: git message to commit extract results
-    required: true
-    default: 'markdown-translation: extract xliff'
-  compose_message:
-    description: git message to commit compose results
-    required: true
-    default: 'markdown-translation: compose xliff into translated markdown'
 runs:
   using: composite
   steps:
+    - name: 'Parse message to props'
+      id: 'props'
+      env:
+        SPACE: ${{inputs.command_space}}
+        DEFAULT_SLL: ${{inputs.default_sll}}
+        DEFAULT_TLL: ${{inputs.default_tll}}
+      run: |
+        set -e
+        set -- ${{github.event.comment.body}}
+
+        SLL="$DEFAULT_SLL"
+        TLL="$DEFAULT_TLL"
+
+        [[ "$1" == "/$SPACE" ]] && shift || exit 0
+        [[ "$1" == "xliff" ]] && shift || exit 0
+        [[ "$1" == "extract" || "$1" == "compose" ]] && COMMAND="$1" && shift || exit 0
+
+        while (( $# )); do
+          case "$1" in
+            -i|--input ) :
+              shift; INPUT=$1;;
+            -o|--output ) :
+              shift; OUTPUT=$1;;
+            --sll|--source-language-locale ) :
+              shift; SLL=$1;;
+            --tll|--target-language-locale ) :
+              shift; TLL=$1;;
+          esac
+          shift
+        done
+
+        [[ $INPUT && $OUTPUT && $SLL && $TLL ]] && STATUS=true || STATUS=false
+
+        echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+        echo "command=$COMMAND" >> "$GITHUB_OUTPUT"
+        echo "input=$INPUT" >> "$GITHUB_OUTPUT"
+        echo "output=$OUTPUT" >> "$GITHUB_OUTPUT"
+        echo "sll=$SLL" >> "$GITHUB_OUTPUT"
+        echo "tll=$TLL" >> "$GITHUB_OUTPUT"
+
     - uses: actions/checkout@v4
+      if: ${{steps.props.outputs.status == 'true'}}
     - uses: actions/setup-node@v4
+      if: ${{steps.props.outputs.status == 'true'}}
       with:
         node-version: 18
-    - run: npm i @diplodoc/cli -g
-      shell: bash
-    - run: gh pr checkout ${{inputs.pr}}
-      shell: bash
-    - run: echo ${{inputs.parameter}}
-      shell: bash
-    - run: yfm xliff extract --sll ${{inputs.sll}} --tll ${{inputs.tll}} --input ${{inputs.input}} --output ${{inputs.output}}
-      shell: bash
-      if: ${{inputs.command == 'extract'}}
-    - run: yfm xliff compose --sll ${{inputs.sll}} --tll ${{inputs.tll}} --input ${{inputs.input}} --output ${{inputs.output}}
-      shell: bash
-      if: ${{inputs.command == 'compose'}}
-    - run: |
+    - name: 'Install latest Diplodoc/cli'
+      if: ${{steps.props.outputs.status == 'true'}}
+      run: npm i @diplodoc/cli -g
+    - name: 'Run Diplodoc xliff command'
+      if: ${{steps.props.outputs.status == 'true'}}
+      run: yfm xliff ${{steps.props.outputs.command}} --sll ${{steps.props.outputs.sll}} --tll ${{steps.props.outputs.tll}} --input ${{steps.props.outputs.input}} --output ${{steps.props.outputs.output}}
+    - name: 'Prepare git env'
+      if: ${{steps.props.outputs.status == 'true'}}
+      run: |
         git config --global user.name ${{inputs.git_name}}
         git config --global user.email ${{inputs.git_email}}
         git add .
-        git commit -m "${{inputs.extract_message}}"
-      shell: bash
-      if: ${{inputs.command == 'extract'}}
-    - run: |
-        git config --global user.name ${{inputs.git_name}}
-        git config --global user.email ${{inputs.git_email}}
-        git add .
-        git commit -m "${{inputs.compose_message}}"
-      shell: bash
-      if: ${{inputs.command == 'compose'}}
-    - run: git push
-      shell: bash
+        git commit -m "${{inputs.command_space}} auto${{steps.props.outputs.command}} xliff"
+        git push
 branding:
   icon: file-text
   color: gray-dark
