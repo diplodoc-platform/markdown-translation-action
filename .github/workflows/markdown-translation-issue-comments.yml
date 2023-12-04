@@ -35,5 +35,3 @@ jobs:
           output: ${{steps.parameters-parsing.outputs.group3}}
           sll: ${{steps.parameters-parsing.outputs.group4}}
           tll: ${{steps.parameters-parsing.outputs.group5}}
-          git_name: ${{steps.parameters-parsing.outputs.git_name}}
-          git_email: ${{steps.parameters-parsing.outputs.git_email}}
