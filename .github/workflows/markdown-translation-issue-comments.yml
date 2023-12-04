@@ -11,43 +11,27 @@ jobs:
       issues: write
     runs-on: ubuntu-latest
     steps:
-      - name: parse markdown-translation command from comments
+      - name: parse markdown-translation parameters from comment
         id: parameters-parsing
         uses: actions-ecosystem/action-regex-match@v2.0.2
         with:
           text: ${{github.event.comment.body}}
           regex: '^markdown-translation:\s*(extract|compose)\s+([\w\d-]+)\s+([\w\d-]+)\s+([\w]+\-[\w]+)\s+([\w]+\-[\w]+)(?=\s|$)'
-      - name: check command parsing
+      - name: parameters parsing status
         id: parameters-parsing-status
         run: echo -e "status=${{steps.parameters-parsing.outputs.group1 != '' && steps.parameters-parsing.outputs.group2 != '' && steps.parameters-parsing.outputs.group3 != '' && steps.parameters-parsing.outputs.group4 != '' && steps.parameters-parsing.outputs.group5 != ''}}" >> $GITHUB_OUTPUT
         shell: bash
-      - name: use parameters
-        run: |
-          echo -e "${{steps.parameters-parsing.outputs.group1}}"
-          echo -e "${{steps.parameters-parsing.outputs.group2}}"
-          echo -e "${{steps.parameters-parsing.outputs.group3}}"
-          echo -e "${{steps.parameters-parsing.outputs.group4}}"
-          echo -e "${{steps.parameters-parsing.outputs.group5}}"
-          echo -e "${{steps.parameters-parsing-status.outputs.status}}"
-        shell: bash
-#      - name:
-#      - name: parse parameters
-#        id: parse-parameters
-#        shell: bash
-#        run: |
-#          echo -e "pr=${{github.event.inputs.pr}}\ncommand=${{github.event.inputs.command}}\ninput=${{github.event.inputs.input}}\noutput=${{github.event.inputs.output}}\nsll=${{github.event.inputs.sll}}\ntll=${{github.event.inputs.tll}}\ngit_name=${{github.event.inputs.git_name}}\ngit_email=${{github.event.inputs.git_email}}\nextract_message=${{github.event.inputs.extract_message}}\ncompose_message=${{github.event.inputs.compose_message}}" >> $GITHUB_OUTPUT
-#      - uses: actions/checkout@v4
-#      - uses: ./
-#        env:
-#          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-#        with:
-#          pr: ${{steps.parse-parameters.outputs.pr}}
-#          command: ${{steps.parse-parameters.outputs.command}}
-#          input: ${{steps.parse-parameters.outputs.input}}
-#          output: ${{steps.parse-parameters.outputs.output}}
-#          sll: ${{steps.parse-parameters.outputs.sll}}
-#          tll: ${{steps.parse-parameters.outputs.tll}}
-#          git_name: ${{steps.parse-parameters.outputs.git_name}}
-#          git_email: ${{steps.parse-parameters.outputs.git_email}}
-#          extract_message: ${{steps.parse-parameters.outputs.extract_message}}
-#          compose_message: ${{steps.parse-parameters.outputs.compose_message}}
+      - uses: actions/checkout@v4
+        if: ${{steps.parameters-parsing-status.outputs.status == 'true'}}
+      - name: markdown-translation
+        if: ${{steps.parameters-parsing-status.outputs.status == 'true'}}
+        uses: ./
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          pr: ${{github.event.issue.number}}
+          command: ${{steps.parameters-parsing.outputs.group1}}
+          input: ${{steps.parameters-parsing.outputs.group2}}
+          output: ${{steps.parameters-parsing.outputs.group3}}
+          sll: ${{steps.parameters-parsing.outputs.group4}}
+          tll: ${{steps.parameters-parsing.outputs.group5}}
